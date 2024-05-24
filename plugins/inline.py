@@ -117,7 +117,11 @@ async def search_direct(bot, message):
     logger.info(f"Search results: {files}")  # Add this line for logging
 
     if files:
-        keyboard = get_reply_markup(query)
+        buttons = []
+        for idx, file in enumerate(files):
+            buttons.append([InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}")])
+    
+        keyboard = InlineKeyboardMarkup(buttons)
         await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
     else:
         await message.reply_text("No matching files found.")
