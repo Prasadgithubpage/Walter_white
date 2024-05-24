@@ -4,10 +4,10 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from database.ia_filterdb import get_search_results
 from utils import get_size
-from info import AUTH_USERS, AUTH_CHANNEL, CUSTOM_FILE_CAPTION
+from info import CACHE_TIME, AUTH_USERS, AUTH_CHANNEL, CUSTOM_FILE_CAPTION
 
 logger = logging.getLogger(__name__)
-CACHE_TIME = 300  # Set an appropriate cache time value in seconds
+ # Set an appropriate cache time value in seconds
 cache_time = 0 if AUTH_USERS or AUTH_CHANNEL else CACHE_TIME
 
 # Function to check if the user is allowed to use the bot
