@@ -131,7 +131,8 @@ async def callback_handler(bot, query):
     if data.startswith("file_"):
         try:
             file_idx = int(data.split("_")[1])
-            files, _, _ = await get_search_results(query.message.text.split(maxsplit=1)[1], max_results=10)
+            search_query = query.message.text.split(maxsplit=1)[1]
+            files, _, _ = await get_search_results(search_query, max_results=10)
             selected_file = files[file_idx]
             await query.message.reply_document(document=selected_file.file_id, caption=selected_file.caption)
         except Exception as e:
