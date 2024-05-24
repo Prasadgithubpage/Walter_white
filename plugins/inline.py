@@ -125,3 +125,14 @@ async def search_direct(bot, message):
         await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
     else:
         await message.reply_text("No matching files found.")
+@Client.on_callback_query()
+async def callback_handler(bot, query):
+    data = query.data
+    if data.startswith("file_"):
+        try:
+            file_idx = int(data.split("_")[1])
+            files, _, _ = await get_search_results(query.message.text.split(maxsplit=1)[1], max_results=10)
+            selected_file = files[file_idx]
+            await query.message.reply_document(document=selected_file.file_id, caption=selected_file.caption)
+        except Exception as e:
+            logger.error(f"Error handling callback query: {e}")
