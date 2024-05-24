@@ -108,10 +108,13 @@ def get_reply_markup(query):
     return InlineKeyboardMarkup(buttons)
 
 
+
 @Client.on_message(filters.command("search"))
 async def search_direct(bot, message):
     query = message.text.split(maxsplit=1)[1]
     files, _, _ = await get_search_results(query, max_results=10)
+
+    logger.info(f"Search results: {files}")  # Add this line for logging
 
     if files:
         keyboard = get_reply_markup(query)
