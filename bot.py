@@ -112,8 +112,5 @@ class Bot(Client):
 
 app = Bot()
 
-@app.on_message(filters.text)
-async def handle_text_message(client, message):
-    await app.on_message(message)
-
+# Start the bot
 app.run()
