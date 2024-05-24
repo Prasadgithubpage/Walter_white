@@ -133,7 +133,11 @@ async def callback_handler(bot, query):
             file_idx = int(data.split("_")[1])
             search_query = query.message.text.split(maxsplit=1)[1]
             files, _, _ = await get_search_results(search_query, max_results=10)
-            selected_file = files[file_idx]
-            await query.message.reply_document(document=selected_file.file_id, caption=selected_file.caption)
+            logger.info(f"Search results: {files}")  # Add logging to check search results
+            if files and 0 <= file_idx < len(files):
+                selected_file = files[file_idx]
+                await query.message.reply_document(document=selected_file.file_id, caption=selected_file.caption)
+            else:
+                logger.error("Invalid file index or empty search results")
         except Exception as e:
             logger.error(f"Error handling callback query: {e}")
