@@ -73,10 +73,20 @@ class Bot(Client):
 
     async def search_files(self, query: str) -> list:
     # Perform MongoDB search for matching files
-    # Replace the below line with actual MongoDB search logic
-        files = await Media.search_files(query)  # Assuming search_files method in Media class
-        self.files = files
-        return files[:10] 
+        try:
+        # Assuming Media is a MongoDB collection
+        # Replace 'Media' with your actual collection name
+        cursor = Media.find({"$text": {"$search": query}})
+        
+        # Extracting filenames from the cursor
+        files = [doc["filename"] for doc in cursor]
+        
+            self.files = files
+            return files[:10]  # Returning the top 10 matching results
+        except Exception as e:
+            logging.error(f"Error searching files: {e}")
+            return []  # Return an empty list if an error occurs
+
 
     async def get_file_by_index(self, index: int) -> str:
         # Dummy function to retrieve a file by its index
