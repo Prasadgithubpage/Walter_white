@@ -72,11 +72,11 @@ class Bot(Client):
                 current += 1
 
     async def search_files(self, query: str) -> list:
-        # Perform MongoDB search for matching files
-        # Replace the below line with actual MongoDB search logic
-        files = await Media.search_files(query)
+    # Perform MongoDB search for matching files
+    # Replace the below line with actual MongoDB search logic
+        files = await Media.search_files(query)  # Assuming search_files method in Media class
         self.files = files
-        return files[:10]
+        return files[:10] 
 
     async def get_file_by_index(self, index: int) -> str:
         # Dummy function to retrieve a file by its index
