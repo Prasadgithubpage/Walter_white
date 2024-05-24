@@ -1,40 +1,76 @@
 import logging
 from pyrogram import Client, emoji, filters
-from pyrogram.errors.exceptions.bad_request_400 import QueryIdInvalid
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedDocument, InlineQuery
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
 from database.ia_filterdb import get_search_results
-from utils import is_subscribed, get_size, temp
-from info import CACHE_TIME, AUTH_USERS, AUTH_CHANNEL, CUSTOM_FILE_CAPTION
+from utils import get_size
+from info import AUTH_USERS, AUTH_CHANNEL, CUSTOM_FILE_CAPTION
 
 logger = logging.getLogger(__name__)
 cache_time = 0 if AUTH_USERS or AUTH_CHANNEL else CACHE_TIME
 
-async def inline_users(query: InlineQuery):
+# Function to check if the user is allowed to use the bot
+async def allowed_user(query):
     if AUTH_USERS:
         if query.from_user and query.from_user.id in AUTH_USERS:
             return True
         else:
             return False
-    if query.from_user and query.from_user.id not in temp.BANNED_USERS:
-        return True
-    return False
+    return True
+
+# Function to handle sending files
+async def send_file(bot, query, files):
+    results = []
+    for file in files:
+        title = file.file_name
+        size = get_size(file.file_size)
+        f_caption = file.caption if file.caption else title
+        if CUSTOM_FILE_CAPTION:
+            try:
+                f_caption = CUSTOM_FILE_CAPTION.format(file_name=title, file_size=size, file_caption=f_caption)
+            except Exception as e:
+                logger.exception(e)
+        results.append(
+            InlineQueryResultCachedDocument(
+                title=title,
+                document_file_id=file.file_id,
+                caption=f_caption,
+                description=f'Size: {size}\nType: {file.file_type}'
+            )
+        )
+    switch_pm_text = f"{emoji.FILE_FOLDER} Results - {len(files)}"
+    if query.query:
+        switch_pm_text += f" for {query.query}"
+    try:
+        await query.answer(
+            results=results,
+            is_personal=True,
+            cache_time=cache_time,
+            switch_pm_text=switch_pm_text,
+            switch_pm_parameter="start"
+        )
+    except Exception as e:
+        logging.exception(str(e))
 
 @Client.on_inline_query()
 async def answer(bot, query):
     """Show search results for given inline query"""
-    
-    if not await inline_users(query):
-        await query.answer(results=[],
-                           cache_time=0,
-                           switch_pm_text='okDa',
-                           switch_pm_parameter="hehe")
+    if not await allowed_user(query):
+        await query.answer(
+            results=[],
+            cache_time=0,
+            switch_pm_text='You are not authorized to use this bot',
+            switch_pm_parameter="start"
+        )
         return
 
     if AUTH_CHANNEL and not await is_subscribed(bot, query):
-        await query.answer(results=[],
-                           cache_time=0,
-                           switch_pm_text='You have to subscribe my channel to use the bot',
-                           switch_pm_parameter="subscribe")
+        await query.answer(
+            results=[],
+            cache_time=0,
+            switch_pm_text='You have to subscribe to use the bot',
+            switch_pm_parameter="subscribe"
+        )
         return
 
     results = []
@@ -47,97 +83,21 @@ async def answer(bot, query):
         file_type = None
 
     offset = int(query.offset or 0)
-    files, next_offset, total = await get_search_results(string,
-                                                  file_type=file_type,
-                                                  max_results=10,
-                                                  offset=offset)
-
-    for file in files:
-        title=file.file_name
-        size=get_size(file.file_size)
-        f_caption=file.caption
-        if CUSTOM_FILE_CAPTION:
-            try:
-                f_caption=CUSTOM_FILE_CAPTION.format(file_name= '' if title is None else title, file_size='' if size is None else size, file_caption='' if f_caption is None else f_caption)
-            except Exception as e:
-                logger.exception(e)
-                f_caption=f_caption
-        if f_caption is None:
-            f_caption = f"{file.file_name}"
-        results.append(
-            InlineQueryResultCachedDocument(
-                title=file.file_name,
-                document_file_id=file.file_id,
-                caption=f_caption,
-                description=f'Size: {get_size(file.file_size)}\nType: {file.file_type}'
-            ))
-
-    if results:
-        switch_pm_text = f"{emoji.FILE_FOLDER} Results - {total}"
-        if string:
-            switch_pm_text += f" for {string}"
-        try:
-            await query.answer(results=results,
-                           is_personal = True,
-                           cache_time=cache_time,
-                           switch_pm_text=switch_pm_text,
-                           switch_pm_parameter="start",
-                           next_offset=str(next_offset))
-        except QueryIdInvalid:
-            pass
-        except Exception as e:
-            logging.exception(str(e))
-    else:
-        switch_pm_text = f'{emoji.CROSS_MARK} No results'
-        if string:
-            switch_pm_text += f' for "{string}"'
-
-        await query.answer(results=[],
-                           is_personal = True,
-                           cache_time=cache_time,
-                           switch_pm_text=switch_pm_text,
-                           switch_pm_parameter="okay")
-
-
-def get_reply_markup(query):
-    buttons = [
-        [
-            InlineKeyboardButton('Search again', switch_inline_query_current_chat=query)
-        ]
-        ]
-    return InlineKeyboardMarkup(buttons)
-
-
+    files, next_offset, total = await get_search_results(string, file_type=file_type, max_results=10, offset=offset)
+    await send_file(bot, query, files)
 
 @Client.on_message(filters.command("search"))
-async def search_direct(bot, message):
-    query = message.text.split(maxsplit=1)[1]
-    files, _, _ = await get_search_results(query, max_results=10)
-
-    logger.info(f"Search results: {files}")  # Add this line for logging
-
-    if files:
-        buttons = []
-        for idx, file in enumerate(files):
-            buttons.append([InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}")])
-    
-        keyboard = InlineKeyboardMarkup(buttons)
-        await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
-    else:
-        await message.reply_text("No matching files found.")
-@Client.on_message(filters.command("search"))
-async def search_direct(bot, message):
+async def search(bot, message):
     query = message.text.split(maxsplit=1)[1]
 
-    logger.info(f"Direct mode search query: {query}")  # Add this line for logging
+    logger.info(f"Search query: {query}")
 
     files, _, _ = await get_search_results(query, max_results=10)
-
     if files:
-        buttons = []
-        for idx, file in enumerate(files):
-            buttons.append([InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}")])
-    
+        buttons = [
+            [InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}")]
+            for idx, file in enumerate(files)
+        ]
         keyboard = InlineKeyboardMarkup(buttons)
         await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
     else:
@@ -158,4 +118,3 @@ async def callback_handler(bot, query):
                 await query.answer("No matching files found.")
         except Exception as e:
             logger.error(f"Error handling callback query: {e}")
-
