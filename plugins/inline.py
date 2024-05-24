@@ -125,19 +125,20 @@ async def search_direct(bot, message):
         await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
     else:
         await message.reply_text("No matching files found.")
-@Client.on_callback_query()
-async def callback_handler(bot, query):
-    data = query.data
-    if data.startswith("file_"):
-        try:
-            file_idx = int(data.split("_")[1])
-            search_query = query.message.text.split(maxsplit=1)[1]
-            files, _, _ = await get_search_results(search_query, max_results=10)
-            logger.info(f"Search results: {files}")  # Add logging to check search results
-            if files and 0 <= file_idx < len(files):
-                selected_file = files[file_idx]
-                await query.message.reply_document(document=selected_file.file_id, caption=selected_file.caption)
-            else:
-                logger.error("Invalid file index or empty search results")
-        except Exception as e:
-            logger.error(f"Error handling callback query: {e}")
+@Client.on_message(filters.command("search"))
+async def search_direct(bot, message):
+    query = message.text.split(maxsplit=1)[1]
+
+    logger.info(f"Direct mode search query: {query}")  # Add this line for logging
+
+    files, _, _ = await get_search_results(query, max_results=10)
+
+    if files:
+        buttons = []
+        for idx, file in enumerate(files):
+            buttons.append([InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}")])
+    
+        keyboard = InlineKeyboardMarkup(buttons)
+        await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
+    else:
+        await message.reply_text("No matching files found.")
