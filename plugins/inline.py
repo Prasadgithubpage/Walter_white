@@ -47,7 +47,6 @@ async def answer(bot, query):
         file_type = None
 
     offset = int(query.offset or 0)
-    reply_markup = get_reply_markup(query=string)
     files, next_offset, total = await get_search_results(string,
                                                   file_type=file_type,
                                                   max_results=10,
@@ -70,8 +69,8 @@ async def answer(bot, query):
                 title=file.file_name,
                 document_file_id=file.file_id,
                 caption=f_caption,
-                description=f'Size: {get_size(file.file_size)}\nType: {file.file_type}',
-                reply_markup=reply_markup))
+                description=f'Size: {get_size(file.file_size)}\nType: {file.file_type}'
+            ))
 
     if results:
         switch_pm_text = f"{emoji.FILE_FOLDER} Results - {total}"
@@ -109,6 +108,13 @@ def get_reply_markup(query):
     return InlineKeyboardMarkup(buttons)
 
 
+@Client.on_message(filters.command("search"))
+async def search_direct(bot, message):
+    query = message.text.split(maxsplit=1)[1]
+    files, _, _ = await get_search_results(query, max_results=10)
 
-
-
+    if files:
+        keyboard = get_reply_markup(query)
+        await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
+    else:
+        await message.reply_text("No matching files found.")
