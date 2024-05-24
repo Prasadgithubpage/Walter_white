@@ -72,9 +72,9 @@ class Bot(Client):
                 current += 1
 
     async def search_files(self, query: str) -> list:
-        # Dummy search function, replace with actual search logic
-        # For now, just return a list of dummy file names based on the query
-        files = [f"{query}_file_{i}.txt" for i in range(1, 11)]
+        # Perform MongoDB search for matching files
+        # Replace the below line with actual MongoDB search logic
+        files = await Media.search_files(query)
         self.files = files
         return files[:10]
 
