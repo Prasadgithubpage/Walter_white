@@ -112,9 +112,8 @@ class Bot(Client):
 
 app = Bot()
 
-# Add handler to capture all text messages and perform search
 @app.on_message(filters.text)
 async def handle_text_message(client, message):
-    await client.on_message(message)
+    await app.on_message(message)
 
 app.run()
