@@ -1,6 +1,7 @@
 import logging
 import logging.config
 from pyrogram import Client, __version__, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.raw.all import layer
 from database.ia_filterdb import Media
 from database.users_chats_db import db
@@ -105,12 +106,12 @@ class Bot(Client):
         query = message.text
         files = await self.search_files(query)
         if files:
-            response = "Found the following files:\n" + "\n".join([f"{i+1}. {file}" for i, file in enumerate(files)])
+            keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton(f"{i+1}. {file}", callback_data=f"file_{i}")] for i, file in enumerate(files)]
+            )
+            await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
         else:
-            response = "No matching files found."
-        await message.reply_text(response)
+            await message.reply_text("No matching files found.")
 
 app = Bot()
-
-# Start the bot
 app.run()
