@@ -88,21 +88,22 @@ async def answer(bot, query):
     await send_file(bot, query, files)
 
 @Client.on_message(filters.command("search"))
-async def search(bot, message):
+async def search_direct(bot, message):
     query = message.text.split(maxsplit=1)[1]
-
-    logger.info(f"Search query: {query}")
-
     files, _, _ = await get_search_results(query, max_results=10)
+
+    logger.info(f"Direct mode search query: {query}")
+
     if files:
-        buttons = [
-            [InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}")]
-            for idx, file in enumerate(files)
-        ]
+        buttons = []
+        for idx, file in enumerate(files):
+            buttons.append([InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}")])
+
         keyboard = InlineKeyboardMarkup(buttons)
         await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
     else:
         await message.reply_text("No matching files found.")
+
 
 @Client.on_callback_query()
 async def callback_handler(bot, query):
