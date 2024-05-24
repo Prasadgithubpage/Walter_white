@@ -104,14 +104,15 @@ class Bot(Client):
 
     async def on_message(self, message: types.Message):
         query = message.text
-        files = await self.search_files(query)
-        if files:
-            keyboard = InlineKeyboardMarkup(
-                [[InlineKeyboardButton(f"{i+1}. {file}", callback_data=f"file_{i}")] for i, file in enumerate(files)]
-            )
-            await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
-        else:
-            await message.reply_text("No matching files found.")
+        if query:
+            files = await self.search_files(query)
+            if files:
+                keyboard = InlineKeyboardMarkup(
+                    [[InlineKeyboardButton(f"{i+1}. {file}", callback_data=f"file_{i}")] for i, file in enumerate(files)]
+                )
+                await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
+            else:
+                await message.reply_text("No matching files found.")
 
 app = Bot()
 app.run()
