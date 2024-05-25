@@ -110,9 +110,12 @@ async def callback_handler(bot, query):
     if data.startswith("file_"):
         try:
             file_idx = int(data.split("_")[1])
-            search_query = query.message.text.split(maxsplit=1)[1]
+            search_query = query.message.reply_to_message.text.split(maxsplit=1)[1]
+            logger.info(f"Callback query search: {search_query}")
             files, _, _ = await get_search_results(search_query, max_results=10)
-            if files:
+            logger.info(f"Files retrieved: {files}")
+            
+            if files and 0 <= file_idx < len(files):
                 selected_file = files[file_idx]
                 title = selected_file.file_name
                 size = get_size(selected_file.file_size)
@@ -125,12 +128,22 @@ async def callback_handler(bot, query):
                     except Exception as e:
                         logger.exception(e)
 
-                await query.message.reply_document(
-                    document=selected_file.file_id,
-                    caption=f_caption
+                logger.info(f"Sending file: {selected_file.file_id}")
+                results = [
+                    InlineQueryResultCachedDocument(
+                        title=title,
+                        document_file_id=selected_file.file_id,
+                        caption=f_caption,
+                        description=f'Size: {size}\nType: {selected_file.file_type}'
+                    )
+                ]
+                await query.answer(
+                    results=results,
+                    cache_time=cache_time,
+                    is_personal=True
                 )
             else:
-                await query.answer("No matching files found.")
+                await query.answer("No matching files found.", show_alert=True)
         except Exception as e:
             logger.error(f"Error handling callback query: {e}")
-            await query.answer("An error occurred while processing your request.")
+            await query.answer("An error occurred while processing your request.", show_alert=True)
