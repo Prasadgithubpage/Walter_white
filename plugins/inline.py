@@ -84,7 +84,7 @@ async def answer(bot, query):
     files, next_offset, total = await get_search_results(string, file_type=file_type, max_results=10, offset=offset)
     await send_file(bot, query, files)
 
-@Client.on_message(filters.text & ~filters.command)
+@Client.on_message(filters.text & filters.private)
 async def search_messages(bot, message):
     query = message.text
 
