@@ -1,9 +1,6 @@
 import logging
 from pyrogram import Client, emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-# Function to handle sending files
-from pyrogram.types import InlineQueryResultCachedDocument
-from pyrogram.types import InlineQueryResultCachedDocument, InlineQueryResultCachedAudio
 
 from database.ia_filterdb import get_search_results
 from utils import get_size
@@ -22,8 +19,6 @@ async def allowed_user(query):
             return False
     return True
 
-
-
 # Function to handle sending files
 async def send_file(bot, query, files):
     results = []
@@ -36,28 +31,14 @@ async def send_file(bot, query, files):
                 f_caption = CUSTOM_FILE_CAPTION.format(file_name=title, file_size=size, file_caption=f_caption)
             except Exception as e:
                 logger.exception(e)
-        
-        if file.file_type in ['document', 'zip', 'm4p']:
-            results.append(
-                InlineQueryResultCachedDocument(
-                    title=title,
-                    document_file_id=file.file_id,
-                    caption=f_caption,
-                    description=f'Size: {size}\nType: {file.file_type}'
-                )
+        results.append(
+            InlineQueryResultCachedDocument(
+                title=title,
+                document_file_id=file.file_id,
+                caption=f_caption,
+                description=f'Size: {size}\nType: {file.file_type}'
             )
-        elif file.file_type == 'audio':
-            results.append(
-                InlineQueryResultCachedAudio(
-                    title=title,
-                    audio_file_id=file.file_id,
-                    caption=f_caption,
-                    description=f'Size: {size}\nType: {file.file_type}'
-                )
-            )
-        else:
-            logger.warning(f"Unsupported file type: {file.file_type}")
-            
+        )
     switch_pm_text = f"{emoji.FILE_FOLDER} Results - {len(files)}"
     if query.query:
         switch_pm_text += f" for {query.query}"
