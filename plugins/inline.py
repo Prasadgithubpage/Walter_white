@@ -1,6 +1,8 @@
 import logging
 from pyrogram import Client, emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+# Function to handle sending files
+from pyrogram.types import InlineQueryResultCachedDocument
 
 from database.ia_filterdb import get_search_results
 from utils import get_size
@@ -19,6 +21,8 @@ async def allowed_user(query):
             return False
     return True
 
+
+
 # Function to handle sending files
 async def send_file(bot, query, files):
     results = []
@@ -32,14 +36,17 @@ async def send_file(bot, query, files):
             except Exception as e:
                 logger.exception(e)
         
-        results.append(
-            InlineQueryResultCachedDocument(
-                title=title,
-                document_file_id=file.file_id,
-                caption=f_caption,
-                description=f'Size: {size}\nType: {file.file_type}'
+        if file.file_type in ['document', 'audio', 'zip', 'm4p']:
+            results.append(
+                InlineQueryResultCachedDocument(
+                    title=title,
+                    document_file_id=file.file_id,
+                    caption=f_caption,
+                    description=f'Size: {size}\nType: {file.file_type}'
+                )
             )
-        )
+        else:
+            logger.warning(f"Unsupported file type: {file.file_type}")
             
     switch_pm_text = f"{emoji.FILE_FOLDER} Results - {len(files)}"
     if query.query:
@@ -54,6 +61,7 @@ async def send_file(bot, query, files):
         )
     except Exception as e:
         logging.exception(str(e))
+
 @Client.on_inline_query()
 async def answer(bot, query):
     """Show search results for given inline query"""
