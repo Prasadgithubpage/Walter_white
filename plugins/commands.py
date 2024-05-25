@@ -47,23 +47,23 @@ async def start(client, message):
 
     # Welcome message for non-admin users
     if not is_admin:
-        await message.reply("""
+        welcome_message = """
 Welcome to buym gallery book downloader bot. This bot will give you books from our vast collection of books.
 
 HOW TO USE THE BOT:
 
 /search {BOOK NAME /HINT}
-""")
-    # URL of the logo
-    logo_url = "https://cdn5.cdn-telegram.org/file/Yu-uD4DVEewOEXJP-Kzd9ZZMa9szshTCrWYSZb70CA5uMba7t3nW9BZPuT4sDuZkEWb2cPNzOvczA8XTtDxyyhc0ZUpQeOXM2OCuXCCenIzvbdcIL1fJCOc79ZJ_PIVXPcdyjfK_6QWiqW2eexHSBsr140gzponnHDSYpAKVNGvWvo9dHAtb3tIPWYtR7pZI95cBPA_lJwZiqb9QyEw3V6SPIyyNB2Nilyo7QUsDg8wk7kNhjSy57hkP3vNr_j7jtDxLeYBxnC4dwyDc2yZzMqLOHSw4tZGGy8eHgIYaYaGiUP5OO56i5U4gOc3A9AY3leZAlc3lBKFOFcRnnGN2zA.jpg"
+"""
 
-    # Send the logo image with the welcome message as a caption
-    await client.send_photo(
-        chat_id=message.chat.id,
-        photo=logo_url,
-        caption=welcome_message
-    )
-        return
+        # URL of the logo
+        logo_url = "https://cdn5.cdn-telegram.org/file/Yu-uD4DVEewOEXJP-Kzd9ZZMa9szshTCrWYSZb70CA5uMba7t3nW9BZPuT4sDuZkEWb2cPNzOvczA8XTtDxyyhc0ZUpQeOXM2OCuXCCenIzvbdcIL1fJCOc79ZJ_PIVXPcdyjfK_6QWiqW2eexHSBsr140gzponnHDSYpAKVNGvWvo9dHAtb3tIPWYtR7pZI95cBPA_lJwZiqb9QyEw3V6SPIyyNB2Nilyo7QUsDg8wk7kNhjSy57hkP3vNr_j7jtDxLeYBxnC4dwyDc2yZzMqLOHSw4tZGGy8eHgIYaYaGiUP5OO56i5U4gOc3A9AY3leZAlc3lBKFOFcRnnGN2zA.jpg"
+
+        # Send the logo image with the welcome message as a caption
+        await client.send_photo(
+            chat_id=message.chat.id,
+            photo=logo_url,
+            caption=welcome_message
+        )
 
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
