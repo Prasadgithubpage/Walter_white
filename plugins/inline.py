@@ -3,6 +3,7 @@ from pyrogram import Client, emoji, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 # Function to handle sending files
 from pyrogram.types import InlineQueryResultCachedDocument
+from pyrogram.types import InlineQueryResultCachedDocument, InlineQueryResultCachedAudio
 
 from database.ia_filterdb import get_search_results
 from utils import get_size
@@ -36,11 +37,20 @@ async def send_file(bot, query, files):
             except Exception as e:
                 logger.exception(e)
         
-        if file.file_type in ['document', 'audio', 'zip', 'm4p']:
+        if file.file_type in ['document', 'zip', 'm4p']:
             results.append(
                 InlineQueryResultCachedDocument(
                     title=title,
                     document_file_id=file.file_id,
+                    caption=f_caption,
+                    description=f'Size: {size}\nType: {file.file_type}'
+                )
+            )
+        elif file.file_type == 'audio':
+            results.append(
+                InlineQueryResultCachedAudio(
+                    title=title,
+                    audio_file_id=file.file_id,
                     caption=f_caption,
                     description=f'Size: {size}\nType: {file.file_type}'
                 )
