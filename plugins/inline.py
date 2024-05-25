@@ -84,7 +84,7 @@ async def answer(bot, query):
     files, next_offset, total = await get_search_results(string, file_type=file_type, max_results=10, offset=offset)
     await send_file(bot, query, files)
 
-@Client.on_message(~filters.command & ~filters.edited)
+@Client.on_message(filters.text & ~filters.command)
 async def search_messages(bot, message):
     query = message.text
 
@@ -100,6 +100,7 @@ async def search_messages(bot, message):
         await message.reply_text("Top 10 matching results:", reply_markup=keyboard)
     else:
         await message.reply_text("No matching files found.")
+
 
 
 @Client.on_callback_query()
