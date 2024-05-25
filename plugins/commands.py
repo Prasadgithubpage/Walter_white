@@ -52,7 +52,7 @@ Welcome to buym gallery book downloader bot. This bot will give you books from o
 
 HOW TO USE THE BOT:
 
-/search {BOOK NAME /HINT}
+JUST TYPE THE NAME OF BOOK AND CLICK ON MOST MATCHING RESULT AND YOU ARE READY TO GO
 """
 
         # URL of the logo
