@@ -31,6 +31,7 @@ async def send_file(bot, query, files):
                 f_caption = CUSTOM_FILE_CAPTION.format(file_name=title, file_size=size, file_caption=f_caption)
             except Exception as e:
                 logger.exception(e)
+        
         results.append(
             InlineQueryResultCachedDocument(
                 title=title,
@@ -39,6 +40,7 @@ async def send_file(bot, query, files):
                 description=f'Size: {size}\nType: {file.file_type}'
             )
         )
+            
     switch_pm_text = f"{emoji.FILE_FOLDER} Results - {len(files)}"
     if query.query:
         switch_pm_text += f" for {query.query}"
@@ -52,7 +54,6 @@ async def send_file(bot, query, files):
         )
     except Exception as e:
         logging.exception(str(e))
-
 @Client.on_inline_query()
 async def answer(bot, query):
     """Show search results for given inline query"""
