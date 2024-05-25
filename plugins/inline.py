@@ -127,10 +127,16 @@ async def callback_handler(bot, query):
                         logger.exception(e)
 
                 logger.info(f"Sending file: {selected_file.file_id}")
-                await query.message.reply_document(
-                    document=selected_file.file_id,
-                    caption=f_caption
-                )
+                if selected_file.file_type == "audio":
+                    await query.message.reply_audio(
+                        audio=selected_file.file_id,
+                        caption=f_caption
+                    )
+                else:
+                    await query.message.reply_document(
+                        document=selected_file.file_id,
+                        caption=f_caption
+                    )
             else:
                 await query.answer("No matching files found.", show_alert=True)
         except Exception as e:
