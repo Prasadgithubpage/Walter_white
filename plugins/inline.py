@@ -1,6 +1,6 @@
 import logging
 from pyrogram import Client, emoji, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedDocument
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from database.ia_filterdb import get_search_results
 from utils import get_size
@@ -130,18 +130,9 @@ async def callback_handler(bot, query):
                         logger.exception(e)
 
                 logger.info(f"Sending file: {selected_file.file_id}")
-                results = [
-                    InlineQueryResultCachedDocument(
-                        title=title,
-                        document_file_id=selected_file.file_id,
-                        caption=f_caption,
-                        description=f'Size: {size}\nType: {selected_file.file_type}'
-                    )
-                ]
-                await query.answer(
-                    results=results,
-                    cache_time=cache_time,
-                    is_personal=True
+                await query.message.reply_document(
+                    document=selected_file.file_id,
+                    caption=f_caption
                 )
             else:
                 await query.answer("No matching files found.", show_alert=True)
