@@ -1,6 +1,6 @@
 import logging
 from pyrogram import Client, emoji, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedDocument
 
 from database.ia_filterdb import get_search_results
 from utils import get_size
@@ -114,8 +114,23 @@ async def callback_handler(bot, query):
             files, _, _ = await get_search_results(search_query, max_results=10)
             if files:
                 selected_file = files[file_idx]
-                await query.message.reply_document(document=selected_file.file_id, caption=selected_file.caption)
+                title = selected_file.file_name
+                size = get_size(selected_file.file_size)
+                f_caption = selected_file.caption if selected_file.caption else title
+
+                if CUSTOM_FILE_CAPTION:
+                    try:
+                        f_caption = CUSTOM_FILE_CAPTION.format(
+                            file_name=title, file_size=size, file_caption=f_caption)
+                    except Exception as e:
+                        logger.exception(e)
+
+                await query.message.reply_document(
+                    document=selected_file.file_id,
+                    caption=f_caption
+                )
             else:
                 await query.answer("No matching files found.")
         except Exception as e:
             logger.error(f"Error handling callback query: {e}")
+            await query.answer("An error occurred while processing your request.")
