@@ -96,7 +96,7 @@ async def search(bot, message):
     files, _, _ = await get_search_results(query, max_results=10)
     if files:
         buttons = [
-            [InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}")]
+            [InlineKeyboardButton(file.file_name, callback_data=f"file_{idx}_{query}")]
             for idx, file in enumerate(files)
         ]
         keyboard = InlineKeyboardMarkup(buttons)
@@ -109,8 +109,9 @@ async def callback_handler(bot, query):
     data = query.data
     if data.startswith("file_"):
         try:
-            file_idx = int(data.split("_")[1])
-            search_query = query.message.reply_to_message.text.split(maxsplit=1)[1]
+            parts = data.split("_")
+            file_idx = int(parts[1])
+            search_query = parts[2]
             logger.info(f"Callback query search: {search_query}")
             files, _, _ = await get_search_results(search_query, max_results=10)
             logger.info(f"Files retrieved: {files}")
