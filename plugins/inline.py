@@ -21,7 +21,6 @@ async def allowed_user(query):
 
 # Function to handle sending files
 async def send_file(bot, query, files):
-    results = []
     for file in files:
         title = file.file_name
         size = get_size(file.file_size)
@@ -31,27 +30,25 @@ async def send_file(bot, query, files):
                 f_caption = CUSTOM_FILE_CAPTION.format(file_name=title, file_size=size, file_caption=f_caption)
             except Exception as e:
                 logger.exception(e)
-        results.append(
-            InlineQueryResultCachedDocument(
-                title=title,
-                document_file_id=file.file_id,
-                caption=f_caption,
-                description=f'Size: {size}\nType: {file.file_type}'
-            )
-        )
-    switch_pm_text = f"{emoji.FILE_FOLDER} Results - {len(files)}"
-    if query.query:
-        switch_pm_text += f" for {query.query}"
-    try:
-        await query.answer(
-            results=results,
-            is_personal=True,
-            cache_time=cache_time,
-            switch_pm_text=switch_pm_text,
-            switch_pm_parameter="start"
-        )
-    except Exception as e:
-        logging.exception(str(e))
+
+        # Check the file type
+        if file.file_type == 'audio':
+            try:
+                await query.message.reply_audio(
+                    audio=file.file_id,
+                    caption=f_caption
+                )
+            except Exception as e:
+                logger.error(f"Error sending audio file: {e}")
+        else:
+            try:
+                await query.message.reply_document(
+                    document=file.file_id,
+                    caption=f_caption
+                )
+            except Exception as e:
+                logger.error(f"Error sending document file: {e}")
+
 
 @Client.on_inline_query()
 async def answer(bot, query):
