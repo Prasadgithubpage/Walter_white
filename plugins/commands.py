@@ -52,12 +52,9 @@ JUST TYPE THE NAME OF BOOK AND CLICK ON MOST MATCHING RESULT AND YOU ARE READY T
         await client.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention))
 
     if len(message.command) != 2:
-        await message.reply_photo(
-            photo=random.choice(PICS),
-            caption=script.START_TXT.format(message.from_user.mention, temp.U_NAME, temp.B_NAME),
-            parse_mode=enums.ParseMode.HTML
-        )
+        # Removed the additional welcome message here
         return
+    
     if AUTH_CHANNEL and not await is_subscribed(client, message):
         try:
             invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
@@ -87,11 +84,7 @@ JUST TYPE THE NAME OF BOOK AND CLICK ON MOST MATCHING RESULT AND YOU ARE READY T
         )
         return
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
-        await message.reply_photo(
-            photo=random.choice(PICS),
-            caption=script.START_TXT.format(message.from_user.mention, temp.U_NAME, temp.B_NAME),
-            parse_mode=enums.ParseMode.HTML
-        )
+        # Removed the additional welcome message here
         return
     data = message.command[1]
     try:
@@ -108,10 +101,10 @@ JUST TYPE THE NAME OF BOOK AND CLICK ON MOST MATCHING RESULT AND YOU ARE READY T
             try:
                 with open(file) as file_data:
                     msgs = json.loads(file_data.read())
+                os.remove(file)
             except:
                 await sts.edit("FAILED")
                 return await client.send_message(LOG_CHANNEL, "UNABLE TO OPEN FILE.")
-            os.remove(file)
             BATCH_FILES[file_id] = msgs
         for msg in msgs:
             title = msg.get("title")
