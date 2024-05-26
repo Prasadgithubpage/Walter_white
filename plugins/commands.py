@@ -106,30 +106,30 @@ JUST TYPE THE NAME OF BOOK AND CLICK ON MOST MATCHING RESULT AND YOU ARE READY T
                 await sts.edit("FAILED")
                 return await client.send_message(LOG_CHANNEL, "UNABLE TO OPEN FILE.")
             BATCH_FILES[file_id] = msgs
-        for msg in msgs:
-    title = msg.get("title")
-    size = get_size(int(msg.get("size", 0)))
-    f_caption = msg.get("caption", "")
-    media = msg.get("media")  # Get the 'media' key from the dictionary
-    if media:
-        try:
-            await client.send_cached_media(
-                chat_id=message.from_user.id,
-                file_id=media,  # Use the 'media' value if it exists
-                caption=f_caption
-            )
-        except FloodWait as e:
-            await asyncio.sleep(e.value)
-            await client.send_cached_media(
-                chat_id=message.from_user.id,
-                file_id=media,  # Use the 'media' value if it exists
-                caption=f_caption
-            )
-        except Exception as e:
-            logger.exception(e)
-    else:
-        logger.error("Media key is missing from the message dictionary.")
-        return
+    for msg in msgs:
+        title = msg.get("title")
+        size = get_size(int(msg.get("size", 0)))
+        f_caption = msg.get("caption", "")
+        media = msg.get("media")  # Get the 'media' key from the dictionary
+        if media:
+            try:
+                await client.send_cached_media(
+                    chat_id=message.from_user.id,
+                    file_id=media,  # Use the 'media' value if it exists
+                    caption=f_caption
+                )
+            except FloodWait as e:
+                await asyncio.sleep(e.value)
+                await client.send_cached_media(
+                    chat_id=message.from_user.id,
+                    file_id=media,  # Use the 'media' value if it exists
+                    caption=f_caption
+                )
+            except Exception as e:
+                logger.exception(e)
+        else:
+            logger.error("Media key is missing from the message dictionary.")
+            return
     sts = await message.reply("Please wait")
     file = await get_file_details(file_id)
     if not file:
